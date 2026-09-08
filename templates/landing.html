@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>KisanMitra AI — Smart Crop Health & Risk Detection</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body class="auth-body">
+  <div class="auth-wrap">
+    <div class="brand">
+      <span class="brand-mark">🌿</span>
+      <div>
+        <h1>KisanMitra AI</h1>
+        <p class="brand-sub">by Team CropTech · SIH26180</p>
+      </div>
+    </div>
+
+    <p class="lead">
+      AI + IoT crop health and risk detection. Live field sensors, instant leaf
+      diagnosis and an AI advisor that speaks a farmer's language.
+    </p>
+
+    <div class="choice-grid">
+      <a class="choice-card" href="{{ url_for('login') }}">
+        <span class="choice-icon">👤</span>
+        <h2>I already have an account</h2>
+        <p>Log in and open your field dashboard.</p>
+        <span class="btn btn-primary">Log in</span>
+      </a>
+
+      <a class="choice-card" href="{{ url_for('signup') }}">
+        <span class="choice-icon">✨</span>
+        <h2>I am a new user</h2>
+        <p>Create a free account and connect your field.</p>
+        <span class="btn btn-outline">Sign up</span>
+      </a>
+    </div>
+  </div>
+</body>
+</html>

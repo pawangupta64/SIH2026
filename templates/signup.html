@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sign up — KisanMitra AI</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="auth-body">
+  <div class="auth-card">
+    <a class="back-link" href="{{ url_for('landing') }}">← Back</a>
+    <h1>Create your account</h1>
+    <p class="muted">Takes less than a minute.</p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="flash {{ category }}">{{ message }}</div>
+      {% endfor %}
+    {% endwith %}
+
+    <form method="post" class="form">
+      <label>Full name<input name="name" required placeholder="Suraj Ray" /></label>
+      <label>Email<input type="email" name="email" required placeholder="you@example.com" /></label>
+      <label>Password<input type="password" name="password" required minlength="6" placeholder="At least 6 characters" /></label>
+      <label>Farm name<input name="farm_name" placeholder="Green Valley Farm" /></label>
+      <label>Village / District<input name="location" placeholder="Nadia, West Bengal" /></label>
+      <label>Main crop<input name="crop" placeholder="Paddy" /></label>
+      <button class="btn btn-primary btn-block" type="submit">Create account</button>
+    </form>
+
+    <p class="muted center">Already registered? <a href="{{ url_for('login') }}">Log in</a></p>
+  </div>
+</body>
+</html>

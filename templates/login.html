@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Log in — KisanMitra AI</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body class="auth-body">
+  <div class="auth-card">
+    <a class="back-link" href="{{ url_for('landing') }}">← Back</a>
+    <h1>Welcome back</h1>
+    <p class="muted">Log in to see your field.</p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="flash {{ category }}">{{ message }}</div>
+      {% endfor %}
+    {% endwith %}
+
+    <form method="post" class="form">
+      <label>Email<input type="email" name="email" required placeholder="you@example.com" /></label>
+      <label>Password<input type="password" name="password" required /></label>
+      <button class="btn btn-primary btn-block" type="submit">Log in</button>
+    </form>
+
+    <p class="muted center">New here? <a href="{{ url_for('signup') }}">Create an account</a></p>
+  </div>
+</body>
+</html>

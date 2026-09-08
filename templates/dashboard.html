@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dashboard — KisanMitra AI</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="app">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand small">
+      <span class="brand-mark">🌿</span>
+      <div><h1>KisanMitra AI</h1><p class="brand-sub">Team CropTech</p></div>
+    </div>
+
+    <nav class="nav">
+      <button class="nav-item active" data-view="home">📊 Dashboard</button>
+      <button class="nav-item" data-view="monitoring">🌡️ Field Monitoring</button>
+      <button class="nav-item" data-view="ai">🔬 AI Analysis</button>
+      <button class="nav-item" data-view="analytics">📈 Field Analytics</button>
+      <button class="nav-item" data-view="alerts">🔔 Alerts</button>
+      <button class="nav-item" data-view="advisory">🤖 AI Advisory</button>
+      <button class="nav-item" data-view="chat">💬 Chatbot</button>
+      <button class="nav-item" data-view="settings">⚙️ Settings</button>
+      <button class="nav-item" data-view="profile">👤 My Profile</button>
+    </nav>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <div class="main">
+    <header class="topbar">
+      <button class="icon-btn only-mobile" id="menuBtn">☰</button>
+      <div>
+        <h2 id="viewTitle">Dashboard</h2>
+        <p class="muted small" id="viewSub">Live overview of your field</p>
+      </div>
+
+      <div class="profile-menu">
+        <button class="avatar" id="avatarBtn">{{ user.name[0]|upper }}</button>
+        <div class="dropdown" id="dropdown">
+          <div class="dropdown-head">
+            <strong>{{ user.name }}</strong>
+            <span class="muted small">{{ user.email }}</span>
+          </div>
+          <button class="dropdown-item" data-view="settings">⚙️ Settings</button>
+          <button class="dropdown-item" data-view="profile">👤 My Profile</button>
+          <a class="dropdown-item danger" href="{{ url_for('logout') }}">🚪 Logout</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <!-- DASHBOARD -->
+      <section class="view active" id="view-home">
+        <div class="stat-grid">
+          <div class="stat"><span class="stat-label">Temperature</span><span class="stat-value" id="statTemp">–</span><span class="muted small">°C · DHT sensor</span></div>
+          <div class="stat"><span class="stat-label">Humidity</span><span class="stat-value" id="statHum">–</span><span class="muted small">% · DHT sensor</span></div>
+          <div class="stat"><span class="stat-label">Soil moisture</span><span class="stat-value" id="statMoist">–</span><span class="muted small">% · capacitive probe</span></div>
+          <div class="stat"><span class="stat-label">Last update</span><span class="stat-value small-value" id="statTime">–</span><span class="muted small">from ESP32</span></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Live sensor trend</h3>
+            <button class="btn btn-ghost" id="simulateBtn">+ Add test reading</button>
+          </div>
+          <canvas id="liveChart" height="110"></canvas>
+        </div>
+
+        <div class="panel">
+          <h3>Current alerts</h3>
+          <div id="homeAlerts" class="alert-list"><p class="muted">Loading…</p></div>
+        </div>
+      </section>
+
+      <!-- FIELD MONITORING -->
+      <section class="view" id="view-monitoring">
+        <div class="panel">
+          <div class="panel-head"><h3>Recent readings from your board</h3>
+            <button class="btn btn-ghost" id="refreshBtn">↻ Refresh</button></div>
+          <div class="table-wrap">
+            <table class="table">
+              <thead><tr><th>Time</th><th>Device</th><th>Temp (°C)</th><th>Humidity (%)</th><th>Soil moisture (%)</th></tr></thead>
+              <tbody id="readingRows"><tr><td colspan="5" class="muted">Loading…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>Connect your ESP32</h3>
+          <p class="muted">Your board should POST to this URL every few minutes:</p>
+          <pre class="code">POST http://127.0.0.1:5000/api/ingest
+Header: X-Device-Key: &lt;DEVICE_API_KEY from .env&gt;
+Body:   {"email": "{{ user.email }}", "temperature": 29.4,
+         "humidity": 61.2, "soil_moisture": 43.8}</pre>
+        </div>
+      </section>
+
+      <!-- AI ANALYSIS -->
+      <section class="view" id="view-ai">
+        <div class="panel">
+          <h3>Crop image analysis</h3>
+          <p class="muted">Upload a photo of a leaf, plant, crop or field. Anything else is rejected.</p>
+          <form id="analyseForm" class="upload-box">
+            <input type="file" id="imageInput" accept="image/*" hidden />
+            <img id="preview" alt="" hidden />
+            <button type="button" class="btn btn-outline" id="pickBtn">Choose image</button>
+            <button type="submit" class="btn btn-primary" id="analyseBtn" disabled>Analyse with AI</button>
+          </form>
+          <div id="analyseResult"></div>
+        </div>
+      </section>
+
+      <!-- ANALYTICS -->
+      <section class="view" id="view-analytics">
+        <div class="panel">
+          <h3>7-day averages</h3>
+          <canvas id="analyticsChart" height="110"></canvas>
+        </div>
+        <div class="stat-grid">
+          <div class="stat"><span class="stat-label">Readings stored</span><span class="stat-value" id="statCount">–</span></div>
+          <div class="stat"><span class="stat-label">Avg temperature</span><span class="stat-value" id="avgTemp">–</span></div>
+          <div class="stat"><span class="stat-label">Avg humidity</span><span class="stat-value" id="avgHum">–</span></div>
+          <div class="stat"><span class="stat-label">Avg soil moisture</span><span class="stat-value" id="avgMoist">–</span></div>
+        </div>
+      </section>
+
+      <!-- ALERTS -->
+      <section class="view" id="view-alerts">
+        <div class="panel">
+          <h3>Crop & field alerts</h3>
+          <div id="alertList" class="alert-list"><p class="muted">Loading…</p></div>
+        </div>
+      </section>
+
+      <!-- ADVISORY -->
+      <section class="view" id="view-advisory">
+        <div class="panel">
+          <div class="panel-head"><h3>Today's AI advisory</h3>
+            <button class="btn btn-ghost" id="advisoryBtn">↻ Generate</button></div>
+          <ul id="advisoryList" class="bullet-list"><li class="muted">Press Generate to get advice based on your live sensor data.</li></ul>
+        </div>
+      </section>
+
+      <!-- CHATBOT -->
+      <section class="view" id="view-chat">
+        <div class="panel chat-panel">
+          <h3>Ask KisanMitra</h3>
+          <div class="chat-log" id="chatLog">
+            <div class="bubble bot">Namaste 🙏 Ask me anything about your crops, soil, irrigation, pests or schemes.</div>
+          </div>
+          <form class="chat-form" id="chatForm">
+            <input id="chatInput" placeholder="e.g. My paddy leaves are turning yellow, what should I do?" autocomplete="off" />
+            <button class="btn btn-primary" type="submit">Send</button>
+          </form>
+        </div>
+      </section>
+
+      <!-- SETTINGS -->
+      <section class="view" id="view-settings">
+        <div class="panel">
+          <h3>Alert thresholds</h3>
+          <p class="muted">You get an alert when a sensor value goes outside this range.</p>
+          <div class="form grid-2">
+            <label>Min temperature (°C)<input type="number" step="0.5" id="temp_min" value="{{ user.temp_min }}" /></label>
+            <label>Max temperature (°C)<input type="number" step="0.5" id="temp_max" value="{{ user.temp_max }}" /></label>
+            <label>Min humidity (%)<input type="number" step="1" id="humidity_min" value="{{ user.humidity_min }}" /></label>
+            <label>Max humidity (%)<input type="number" step="1" id="humidity_max" value="{{ user.humidity_max }}" /></label>
+            <label>Min soil moisture (%)<input type="number" step="1" id="moisture_min" value="{{ user.moisture_min }}" /></label>
+            <label>Max soil moisture (%)<input type="number" step="1" id="moisture_max" value="{{ user.moisture_max }}" /></label>
+          </div>
+          <button class="btn btn-primary" id="saveSettings">Save settings</button>
+          <span class="save-note" id="settingsNote"></span>
+        </div>
+      </section>
+
+      <!-- PROFILE -->
+      <section class="view" id="view-profile">
+        <div class="panel">
+          <h3>My profile</h3>
+          <div class="form grid-2">
+            <label>Full name<input id="p_name" value="{{ user.name }}" /></label>
+            <label>Email<input value="{{ user.email }}" disabled /></label>
+            <label>Phone<input id="p_phone" value="{{ user.phone }}" /></label>
+            <label>Farm name<input id="p_farm_name" value="{{ user.farm_name }}" /></label>
+            <label>Village / District<input id="p_location" value="{{ user.location }}" /></label>
+            <label>Main crop<input id="p_crop" value="{{ user.crop }}" /></label>
+          </div>
+          <button class="btn btn-primary" id="saveProfile">Save profile</button>
+          <span class="save-note" id="profileNote"></span>
+          <p class="muted small">Member since {{ user.created_at.strftime('%d %b %Y') }}</p>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>
